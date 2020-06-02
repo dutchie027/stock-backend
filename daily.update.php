@@ -47,5 +47,6 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
                 $stmt->execute();
             }
         }
+        sleep(15);
     }
 }
