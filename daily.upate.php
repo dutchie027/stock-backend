@@ -7,11 +7,9 @@ $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 $api = "https://www.alphavantage.co/query";
 
 $query = "SELECT * FROM stock";
-$stmt = $mysqli->prepare($query);
-$stmt->execute();
-$result = $stmt->get_result();
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
+
+if ($stocks = $GLOBALS['mysqli']->query($query)) {
+    while ($row = $stocks->fetch_assoc()) {
         $symbol = $row['ticker'];
         $sid = $row['stock_id'];
 
