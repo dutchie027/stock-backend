@@ -4,6 +4,12 @@ include_once "/opt/configs/config.php";
 
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
+if ($mysqli->connect_errno) {
+    print '<p>System is currently undergoing maintenance. Please come back soon.</p>';
+    print "<pre>" . $mysqli->connect_error . "</pre>";
+    die();
+}
+
 $api = "https://www.alphavantage.co/query";
 
 $query = "SELECT * FROM stock";
