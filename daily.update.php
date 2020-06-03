@@ -1,9 +1,7 @@
 #!/usr/bin/php
 <?php
 
-include_once "/opt/configs/config.php";
-
-$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+require_once __DIR__ . "/functions/common.php";
 
 $api = "https://www.alphavantage.co/query";
 
@@ -19,14 +17,14 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
         $result = file_get_contents($url);
         $ja = json_decode($result, true);
 
-	$day_count = 0;
+        $day_count = 0;
         if (!empty($ja['Time Series (Daily)'])) {
             foreach ($ja['Time Series (Daily)'] as $date => $results) {
-		# we really only want to do this twice because we've already seeded the stock
-		$day_count++;
-		if ($day_count > 3) {
-			break;
-		}
+                # we really only want to do this twice because we've already seeded the stock
+                $day_count++;
+                if ($day_count > 3) {
+                    break;
+                }
                 $cd = $date;
                 $open = "";
                 $close = "";
@@ -79,19 +77,4 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
         $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
         SendPushover($msg);
     }
-}
-
-function SendPushover($message)
-{
-    curl_setopt_array($ch = curl_init(), array(
-        CURLOPT_URL => "https://api.pushover.net/1/messages.json",
-        CURLOPT_POSTFIELDS => array(
-            "token" => PO_APP_TOKEN,
-            "user" => PO_USER_TOKEN,
-            "sound" => "cashregister",
-            "message" => $message,
-        )
-    ));
-    curl_exec($ch);
-    curl_close($ch);
 }
