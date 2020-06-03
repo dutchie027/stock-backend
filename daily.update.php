@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 
 include_once "/opt/configs/config.php";
@@ -18,8 +19,14 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
         $result = file_get_contents($url);
         $ja = json_decode($result, true);
 
+	$day_count = 0;
         if (!empty($ja['Time Series (Daily)'])) {
             foreach ($ja['Time Series (Daily)'] as $date => $results) {
+		# we really only want to do this twice because we've already seeded the stock
+		$day_count++;
+		if ($day_count > 3) {
+			break;
+		}
                 $cd = $date;
                 $open = "";
                 $close = "";
