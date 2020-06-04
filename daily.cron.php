@@ -57,26 +57,39 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
 }
 
 # This bit gets done every day #
-$query = "SELECT *, 
-shares * close_price AS current_worth,
+$query = "SELECT *, shares * close_price AS current_worth,
 shares * purchase_price AS original_worth,
 (shares * close_price) - (shares * purchase_price) AS gain_loss,
 DATEDIFF(now(),purchase_date) AS days_owned,
 ((shares * close_price) - (shares * purchase_price)) / DATEDIFF(now(),purchase_date) AS daily_change
-FROM user_stock us, stock_price sp, stock s, user_contact uc
-WHERE us.stock_id=sp.stock_id
-AND s.stock_id=us.stock_id
-AND us.user_id=uc.user_id
-AND stock_price_id=(SELECT stock_price_id FROM stock_price 
-WHERE stock_id=us.stock_id ORDER BY stock_date DESC LIMIT 1)";
+FROM signin_stock ss
+LEFT JOIN portfolio p ON ss.portfolio_id=p.portfolio_id
+INNER JOIN stock_price sp ON ss.stock_id=sp.stock_id
+INNER JOIN stock st ON st.stock_id=ss.stock_id
+INNER JOIN signin s ON s.signin_id=ss.signin_id
+WHERE stock_price_id=(SELECT stock_price_id FROM stock_price 
+WHERE stock_id=ss.stock_id ORDER BY stock_date DESC LIMIT 1)
+AND (ss.daily_email=1 OR ss.daily_push=1)";
 
 if ($stocks = $GLOBALS['mysqli']->query($query)) {
     while ($row = $stocks->fetch_assoc()) {
-        $msg = $row['stock_name'] . "\n";
-        $msg .= "Opening Price: " . $row['open_price'] . "\n";
-        $msg .= "Closing Price: " . $row['close_price']. "\n";
-        $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
-        SendPushover($msg);
+        if ($row['daily_push'] == 1 && (strlen($row['pushover_token']) > 10)) {
+            $msg = $row['stock_name'] . "\n";
+            $msg .= "Opening Price: " . $row['open_price'] . "\n";
+            $msg .= "Closing Price: " . $row['close_price']. "\n";
+            $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
+            SendPushover($msg, $row['pushover_token']);
+        }
+        if ($row['daily_email'] == 1 && (filter_var($row['signin_email'], FILTER_VALIDATE_EMAIL))) {
+            $msg = $row['stock_name'] . "\n";
+            $msg .= "Opening Price: " . $row['open_price'] . "\n";
+            $msg .= "Closing Price: " . $row['close_price']. "\n";
+            $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
+            $to = $row['signin_email'];
+            $from = "stock@squarebaboon.com";
+            $subject = "Daily Stock Email: " . $row['ticker'];
+            SendSMTPMail($to, $from, $subject, $msg);
+        }
     }
 }
 
