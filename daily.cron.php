@@ -56,6 +56,7 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
     }
 }
 
+# This bit gets done every day #
 $query = "SELECT *, 
 shares * close_price AS current_worth,
 shares * purchase_price AS original_worth,
@@ -77,4 +78,32 @@ if ($stocks = $GLOBALS['mysqli']->query($query)) {
         $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
         SendPushover($msg);
     }
+}
+
+# now if it's a friday we do the weekly bit
+if (date("l") == "Friday") {
+    # This query will get you all of the prices from the month
+    # to get the first one simply order by date and limit 1
+    # to get the last one order by date desc and limit 1
+    // SELECT *
+    // FROM stock_price
+    // WHERE stock_id=1
+    // AND YEAR(stock_date) = YEAR(CURRENT_DATE()) AND
+    //       WEEK(stock_date) = WEEK(CURRENT_DATE());
+}
+
+# now if it's the last friday of the month we do the monthly bit
+$lastFriday = date('Y-m-d', strtotime('last fri of this month'));
+$today = date("Y-m-d");
+if ($lastFriday == $today) {
+    # This query will get you all of the prices from the month
+    # to get the first one simply order by date and limit 1
+    # to get the last one order by date desc and limit 1
+    // SELECT *
+    // FROM stock_price
+    // WHERE stock_id=1
+    // AND YEAR(stock_date) = YEAR(CURRENT_DATE()) AND
+    //       MONTH(stock_date) = MONTH(CURRENT_DATE());
+    
+    # execute the last friday of the month script
 }
