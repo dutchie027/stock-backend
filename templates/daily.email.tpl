@@ -412,11 +412,11 @@
                                                 </tr>
                                                 <tr>
                                                     <td width="30%" class="purchase_item"><span class="f-fallback">Original Value</span></td>
-                                                    <td class="align-right purchase_item" width="70%"><span class="f-fallback">{{ORIG_WORTH}}</span></td>
+                                                    <td class="align-right purchase_item" width="70%"><span class="f-fallback">${{ORIG_WORTH}}</span></td>
                                                 </tr>
                                                 <tr>
                                                     <td width="30%" class="purchase_item"><span class="f-fallback">Current Value</span></td>
-                                                    <td class="align-right purchase_item" width="70%"><span class="f-fallback">{{CURR_WORTH}}</span></td>
+                                                    <td class="align-right purchase_item" width="70%"><span class="f-fallback">${{CURR_WORTH}}</span></td>
                                                 </tr>
                                                 <tr>
                                                     <td width="30%" class="purchase_item"><span class="f-fallback">Net Difference</span></td>
