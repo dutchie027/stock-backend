@@ -17,7 +17,7 @@ function SendSMTPMail($to, $from, $subject, $content)
         $mail->Password = SG_SMTP_API;
         $mail->SMTPDebug = 0;
         $mail->From = $from;
-        $mail->FromName = "Find A Hydrant";
+        $mail->FromName = "Square Baboon";
         $mail->AddAddress($to);
         $mail->Subject = $subject;
         $mail->Body = $content;
