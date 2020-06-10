@@ -72,23 +72,34 @@ WHERE stock_id=ss.stock_id ORDER BY stock_date DESC LIMIT 1)
 AND (ss.daily_email=1 OR ss.daily_push=1)";
 
 if ($stocks = $GLOBALS['mysqli']->query($query)) {
+    $template = file_get_contents(__DIR__ . '/templates/daily.email.tpl', true);
+
     while ($row = $stocks->fetch_assoc()) {
-        if ($row['daily_push'] == 1 && (strlen($row['pushover_token']) > 10)) {
-            $msg = $row['stock_name'] . "\n";
-            $msg .= "Opening Price: " . $row['open_price'] . "\n";
-            $msg .= "Closing Price: " . $row['close_price']. "\n";
-            $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
-            SendPushover($msg, $row['pushover_token']);
-        }
         if ($row['daily_email'] == 1 && (filter_var($row['signin_email'], FILTER_VALIDATE_EMAIL))) {
-            $msg = $row['stock_name'] . "\n";
-            $msg .= "Opening Price: " . $row['open_price'] . "\n";
-            $msg .= "Closing Price: " . $row['close_price']. "\n";
-            $msg .= "Current Worth: " . $row['current_worth']. " (".$row['gain_loss'].")\n";
+            $vars = array(
+                '{{LDATE}}'=> date("M d, Y"),
+                '{{FNAME}}'=> $row['fname'],
+                '{{TICKER}}'=> $row['ticker'],
+                '{{STOCK}}'=> $row['stock_name'],
+                '{{PORT_NAME}}'=> $row['portfolio_name'],
+                '{{SHARES}}'=> $row['shares'],
+                '{{PURCH_DATE}}'=> $row['purchase_date'] . "(" . $row['days_owned'] . " days ago)",
+                '{{PURCH_PRICE}}'=> $row['purchase_price'],
+                '{{OPEN_PRICE}}'=> $row['open_price'],
+                '{{CLOSE_PRICE}}'=> $row['close_price'],
+                '{{DAY_CHANGE}}'=> number_format($row['close_price'] - $row['open_price'], 2),
+                '{{ORIG_WORTH}}'=> $row['original_worth'],
+                '{{CURR_WORTH}}' => $row['current_worth'],
+                '{{GAIN_LOSS}}' => $row['gain_loss'],
+                '{{PERC_CHG}}' => number_format($row['current_worth'] / $row['original_worth'] * 100 - 100, 2)
+            );
+            
+            $content = str_replace(array_keys($vars), $vars, $template);
+
             $to = $row['signin_email'];
             $from = "stock@squarebaboon.com";
             $subject = "Daily Stock Email: " . $row['ticker'];
-            SendSMTPMail($to, $from, $subject, $msg);
+            SendSMTPMail($to, $from, $subject, $content);
         }
     }
 }
